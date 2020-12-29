@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const blogs = require("./routes/blogs");
 const users = require("./routes/user.routes");
 const { checkUser, requireAuth } = require("./middleware/auth.middleware");
+const appointment = require("./routes/appointment");
 
 var app = express();
 // const expressSession = require('express-session')({
@@ -25,24 +26,50 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 //protect our data we remove the name of our database and password and we change it with process ... inside .env
 
-mongoose
-  .connect(process.env.DB_URI, {
+mongoose.connect(
+  process.env.DB_URI,
+  {
     useNewUrlParser: true,
     useUnifiedTopology: true
-  })
+  },
+  {
+    useMongoClient: true
+  }
+);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function () {
   console.log("connected");
 });
 
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: false }));
+
+// mongoose.connect(
+//   "mongodb+srv://dhiadhafer:dhia123@cluster0.4vcxr.mongodb.net/esciper?retryWrites=true&w=majority",
+//   { useNewUrlParser: true, useUnifiedTopology: true },
+//   {
+//     useMongoClient: true
+//   }
+// );
+// mongoose.connection
+//   .once("open", () => console.log("Connected to the database!"))
+//   .on("error", (err) => console.log("Error", err));
+
+// view engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(checkUser);
 app.get("/jwtid", requireAuth, (req, res) => {
@@ -52,6 +79,12 @@ app.get("/jwtid", requireAuth, (req, res) => {
 app.use("/api/blog", blogs);
 app.use("/api/user", users);
 
+
+app.use("/api/appoinment", appointment);
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  next(createError(404));
+});
 
 // error handler
 app.use(function (err, req, res, next) {
