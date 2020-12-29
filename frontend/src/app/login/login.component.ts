@@ -3,6 +3,12 @@ import { Router } from '@angular/router';
 import { LoginService } from '../login.service';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { SocialAuthService } from 'angularx-social-login';
+import {
+  FacebookLoginProvider,
+  GoogleLoginProvider,
+} from 'angularx-social-login';
+import { SocialUser } from 'angularx-social-login';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -11,10 +17,13 @@ import { ActivatedRoute } from '@angular/router';
 export class LoginComponent implements OnInit {
   email: string = '';
   password: string = '';
+  user: any = {};
+  loggedIn: boolean = false;
   constructor(
     private router: Router,
     private service: LoginService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: SocialAuthService
   ) {}
 
   onLogin() {
@@ -39,7 +48,23 @@ export class LoginComponent implements OnInit {
       });
     }
   }
+  signInWithGoogle(): void {
+    this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  }
 
+  signInWithFB(): void {
+    this.authService.signIn(FacebookLoginProvider.PROVIDER_ID);
+  }
 
-  ngOnInit(): void {}
+  signOut(): void {
+    this.authService.signOut();
+  }
+
+  ngOnInit() {
+    this.authService.authState.subscribe((user) => {
+      console.log(user);
+      this.user = user;
+      this.loggedIn = user != null;
+    });
+  }
 }
